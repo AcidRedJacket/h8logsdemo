@@ -161,7 +161,7 @@
         // --- App State & Configuration ---
         const App = {
             // NOTE: CHANGE THIS URL to your actual API endpoint if different!
-            API_URL: "http://h8logs.run.place/tracker/api.php", 
+            API_URL: "http://h8logs.run.place/config/api.php", 
             users: [], // Array to hold user data
             codes: [], // NEW: Array to hold registration code data
             currentUser: {
