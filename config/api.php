@@ -533,8 +533,9 @@ elseif ($method == 'POST') {
             respond_error($conn, "Database error during package insertion preparation: " . $conn->error, 500);
         }
         
-        // Bind parameters: sssidssssss (11 parameters)
-        $stmt->bind_param("sssidssssss", 
+        // FIX APPLIED: Changed type string from "sssidssssss" to "ssssidsssss"
+        // to correctly bind $itemName (4th param) as string (s), $quantity as integer (i), and $weight as double (d).
+        $stmt->bind_param("ssssidsssss", 
             $id, $personName, $loggedBy, $itemName, $quantity, $weight, 
             $tracking, $poNumber, $location, $isTally, $isDamaged);
 
