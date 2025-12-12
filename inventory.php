@@ -359,6 +359,8 @@
                     this.packages = data.map(pkg => ({
                         ...pkg,
                         id: parseInt(pkg.id), 
+                        personName: String(pkg.personName), 
+                        itemName: String(pkg.itemName),     
                         quantity: parseInt(pkg.quantity),
                         weight: parseFloat(pkg.weight)
                     }));
@@ -565,9 +567,11 @@
                 e.preventDefault();
                 
                 const formData = {
-                    personName: document.getElementById('personName').value.trim(),
+                    // FIX: Explicitly cast to String to prevent backend numeric coercion on new records
+                    personName: String(document.getElementById('personName').value).trim(),
                     loggedBy: document.getElementById('loggedBy').value.trim(),
-                    itemName: document.getElementById('itemName').value.trim(),
+                    // FIX: Explicitly cast to String to prevent backend numeric coercion on new records
+                    itemName: String(document.getElementById('itemName').value).trim(),
                     quantity: parseInt(document.getElementById('quantity').value),
                     weight: parseFloat(document.getElementById('weight').value),
                     tracking: document.getElementById('tracking').value.trim(),
@@ -576,6 +580,16 @@
                     isTally: document.querySelector('input[name="isTally"]:checked').value,
                     isDamaged: document.querySelector('input[name="isDamaged"]:checked').value,
                 };
+                
+                // New validation to ensure text fields are not empty
+                if (!formData.personName) {
+                    App.showToast('Name of Recipient cannot be empty.', 'error');
+                    return;
+                }
+                if (!formData.itemName) {
+                    App.showToast('Item Name/Description cannot be empty.', 'error');
+                    return;
+                }
                 
                 if (isNaN(formData.weight) || isNaN(formData.quantity) || formData.quantity <= 0) {
                     App.showToast('Please ensure Quantity is a positive number and Weight is valid.', 'error');
