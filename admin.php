@@ -94,7 +94,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Username</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Current Role</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Action</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Controls</th>
                         </tr>
                     </thead>
                     <tbody id="userListBody" class="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -288,12 +288,25 @@
                                 ${roleText}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-y-2 md:space-y-0 md:space-x-2 flex flex-col md:flex-row items-center justify-center">
+                            
                             ${isSelfAdmin ? `
-                                <span class="text-slate-400 text-xs">Cannot edit your own admin role</span>
+                                <span class="text-slate-400 text-xs py-2">Cannot edit your own admin role</span>
                             ` : `
-                                <button onclick="App.handleRoleChange(${user.id}, '${user.role}')" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors font-medium p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700">
+                                <button onclick="App.handleRoleChange(${user.id}, '${user.role}')" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors font-medium p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 block w-full md:w-auto">
                                     Change to ${user.role === 'admin' ? 'USER' : 'ADMIN'}
+                                </button>
+                            `}
+
+                            <button onclick="App.handlePasswordReset(${user.id}, '${user.username}')" class="text-amber-600 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300 transition-colors font-medium p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 block w-full md:w-auto">
+                                Reset Password
+                            </button>
+
+                            ${isCurrentUser ? `
+                                <span class="text-slate-400 text-xs py-2">Cannot delete yourself</span>
+                            ` : `
+                                <button onclick="App.handleDeleteUser(${user.id}, '${user.username}')" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors font-medium p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 block w-full md:w-auto">
+                                    Delete User
                                 </button>
                             `}
                         </td>
@@ -371,6 +384,66 @@
                 } catch (error) {
                     console.error("API Role Update Error:", error);
                     this.showToast(`Role update failed: ${error.message}.`, 'error');
+                }
+            },
+            
+            // --- NEW: Password Reset Handler ---
+            async handlePasswordReset(userId, username) {
+                const newPassword = prompt(`Enter the new password for user **${username}** (min 6 characters):`);
+
+                if (newPassword === null) return; // User cancelled
+                
+                if (newPassword.length < 6) {
+                    this.showToast('Password reset failed: Password must be at least 6 characters.', 'error');
+                    return;
+                }
+                
+                this.showToast(`Attempting to reset password for ${username}...`, 'info');
+
+                try {
+                    const response = await fetch(`${this.API_URL}?action=updatePassword`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId, newPassword: newPassword })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) throw new Error(data.message || "Failed to reset password on server.");
+                    
+                    this.showToast(`Password for **${username}** successfully reset!`, 'success');
+                    
+                } catch (error) {
+                    console.error("API Password Reset Error:", error);
+                    this.showToast(`Password reset failed: ${error.message}.`, 'error');
+                }
+            },
+            
+            // --- NEW: Delete User Handler ---
+            async handleDeleteUser(userId, username) {
+                const confirmation = confirm(`Are you absolutely sure you want to permanently delete the user **${username}**? This action cannot be undone.`);
+                
+                if (!confirmation) return;
+                
+                this.showToast(`Attempting to delete user ${username}...`, 'info');
+
+                try {
+                    const response = await fetch(`${this.API_URL}?action=deleteUser`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) throw new Error(data.message || "Failed to delete user on server.");
+                    
+                    this.showToast(`User **${username}** deleted successfully!`, 'success');
+                    this.fetchUsers(); // Refresh the table
+                    
+                } catch (error) {
+                    console.error("API Delete User Error:", error);
+                    this.showToast(`User deletion failed: ${error.message}.`, 'error');
                 }
             },
             
