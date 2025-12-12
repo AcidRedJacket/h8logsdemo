@@ -242,7 +242,7 @@
         const App = {
             // NOTE: CHANGE THIS URL to your actual API endpoint if different!
             // If you are using the same PHP file for API (e.g., using a query string), change this to './inventory.php?action=api' or similar
-            API_URL: "http://h8logs.run.place/tracker/api.php", 
+            API_URL: "http://h8logs.run.place/config/api.php", 
             
             packages: [], // Data will be fetched from the database
             
